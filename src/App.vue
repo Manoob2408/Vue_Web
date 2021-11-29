@@ -1,28 +1,203 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
-  </div>
+  <v-app>
+    <v-app-bar
+      app
+      color="primary"
+      dark
+    >Emanuela's Calendar
+    </v-app-bar>
+
+    <v-main>
+        <v-card
+        color="grey lighten-4"
+        flat
+        height="200px"
+        tile
+      >
+        <v-toolbar dense>
+          <v-app-bar-nav-icon></v-app-bar-nav-icon>
+
+          <v-toolbar-title>My events</v-toolbar-title>
+
+          <v-spacer></v-spacer>
+
+          <v-btn icon>
+            <v-icon>mdi-magnify</v-icon>
+          </v-btn>
+
+          <v-btn icon>
+            <v-icon>mdi-heart</v-icon>
+          </v-btn>
+
+          <v-btn icon>
+            <v-icon>mdi-dots-vertical</v-icon>
+          </v-btn>
+        </v-toolbar>
+      </v-card>
+      <div width="700">
+        <v-sheet
+          tile
+          height="54"
+          class="d-flex"
+          width="700"
+        >
+          <v-btn
+            icon
+            class="ma-2"
+            @click="$refs.calendar.prev()"
+          >
+            <v-icon>mdi-chevron-left</v-icon>
+          </v-btn>
+          <v-select
+            v-model="type"
+            :items="types"
+            dense
+            outlined
+            hide-details
+            class="ma-2"
+            label="type"
+          ></v-select>
+          <v-select
+            v-model="mode"
+            :items="modes"
+            dense
+            outlined
+            hide-details
+            label="event-overlap-mode"
+            class="ma-2"
+          ></v-select>
+          <v-select
+            v-model="weekday"
+            :items="weekdays"
+            dense
+            outlined
+            hide-details
+            label="weekdays"
+            class="ma-2"
+          ></v-select>
+          <v-spacer></v-spacer>
+          <v-btn
+            icon
+            class="ma-2"
+            @click="$refs.calendar.next()"
+          >
+            <v-icon>mdi-chevron-right</v-icon>
+          </v-btn>
+        </v-sheet>
+        <v-sheet height="600" width="700">
+          <v-calendar
+            ref="calendar"
+            v-model="value"
+            :weekdays="weekday"
+            :type="type"
+            :events="events"
+            :event-overlap-mode="mode"
+            :event-overlap-threshold="30"
+            :event-color="getEventColor"
+            @change="getEvents"
+          ></v-calendar>
+        </v-sheet>
+      </div>
+      <HelloWorld/>
+    </v-main>
+    
+    <v-footer
+      color="primary lighten-1"
+      padless
+    >
+      <v-row
+        justify="center"
+        no-gutters
+      >
+        <v-btn
+          v-for="link in links"
+          :key="link"
+          color="white"
+          text
+          rounded
+          class="my-2"
+        >
+          {{ link }}
+        </v-btn>
+        <v-col
+          class="primary lighten-2 py-4 text-center white--text"
+          cols="12"
+        >
+          {{ new Date().getFullYear() }} — <strong>Emanuela</strong>
+        </v-col>
+      </v-row>
+    </v-footer>
+  </v-app>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import HelloWorld from './components/HelloWorld';
 
 export default {
   name: 'App',
-  components: {
-    HelloWorld
-  }
-}
-</script>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
+  components: {
+    HelloWorld,
+  },
+
+  data: () => ({
+      links: [
+        'Home',
+        'About Us',
+        'Team',
+        'Services',
+        'Blog',
+        'Contact Us',
+      ],
+      type: 'month',
+      types: ['month', 'week', 'day', '4day'],
+      mode: 'stack',
+      modes: ['stack', 'column'],
+      weekday: [0, 1, 2, 3, 4, 5, 6],
+      weekdays: [
+        { text: 'Sun - Sat', value: [0, 1, 2, 3, 4, 5, 6] },
+        { text: 'Mon - Sun', value: [1, 2, 3, 4, 5, 6, 0] },
+        { text: 'Mon - Fri', value: [1, 2, 3, 4, 5] },
+        { text: 'Mon, Wed, Fri', value: [1, 3, 5] },
+      ],
+      value: '',
+      events: [],
+      colors: ['blue', 'indigo', 'deep-purple', 'cyan', 'green', 'orange', 'grey darken-1'],
+      names: ['Meeting', 'Holiday', 'PTO', 'Travel', 'Event', 'Birthday', 'Conference', 'Party'],
+  }),
+      methods: {
+      getEvents ({ start, end }) {
+        const events = []
+
+        const min = new Date(`${start.date}T00:00:00`)
+        const max = new Date(`${end.date}T23:59:59`)
+        const days = (max.getTime() - min.getTime()) / 86400000
+        const eventCount = this.rnd(days, days + 20)
+
+        for (let i = 0; i < eventCount; i++) {
+          const allDay = this.rnd(0, 3) === 0
+          const firstTimestamp = this.rnd(min.getTime(), max.getTime())
+          const first = new Date(firstTimestamp - (firstTimestamp % 900000))
+          const secondTimestamp = this.rnd(2, allDay ? 288 : 8) * 900000
+          const second = new Date(first.getTime() + secondTimestamp)
+
+          events.push({
+            name: this.names[this.rnd(0, this.names.length - 1)],
+            start: first,
+            end: second,
+            color: this.colors[this.rnd(0, this.colors.length - 1)],
+            timed: !allDay,
+          })
+        }
+
+        this.events = events
+      },
+      getEventColor (event) {
+        return event.color
+      },
+      rnd (a, b) {
+        return Math.floor((b - a + 1) * Math.random()) + a
+      },
+    },
+};
+</script>
