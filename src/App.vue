@@ -11,7 +11,7 @@
         <v-card
         color="grey lighten-4"
         flat
-        height="200px"
+        height="60px"
         tile
       >
         <v-toolbar dense>
@@ -34,7 +34,7 @@
           </v-btn>
         </v-toolbar>
       </v-card>
-      <div width="700">
+      <div>
         <v-sheet
           tile
           height="54"
@@ -84,7 +84,7 @@
             <v-icon>mdi-chevron-right</v-icon>
           </v-btn>
         </v-sheet>
-        <v-sheet height="600" width="700">
+        <v-sheet height="600">
           <v-calendar
             ref="calendar"
             v-model="value"
@@ -97,8 +97,12 @@
             @change="getEvents"
           ></v-calendar>
         </v-sheet>
+        <div>
+          <HelloWorld/>
+        </div>
+        
       </div>
-      <HelloWorld/>
+      
     </v-main>
     
     <v-footer
